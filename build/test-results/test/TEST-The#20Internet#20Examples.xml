@@ -1,0 +1,70 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="The Internet Examples" tests="1" skipped="0" failures="0" errors="0" timestamp="2022-10-18T11:27:29" hostname="LAPTOP-GLCBARBA" time="5.98">
+  <properties/>
+  <testcase name="Basic Test" classname="The Internet Examples" time="5.98"/>
+  <system-out><![CDATA[2022-10-18 12:27:30,211 Test worker DEBUG Apache Log4j Core 2.19.0 initializing configuration XmlConfiguration[location=C:\Users\theok\Documents\GitHub\Baseline-Serenity-Automation-Framework\build\resources\test\log4j2.xml]
+2022-10-18 12:27:30,213 Test worker DEBUG PluginManager 'Core' found 130 plugins
+2022-10-18 12:27:30,213 Test worker DEBUG PluginManager 'Level' found 0 plugins
+2022-10-18 12:27:30,215 Test worker DEBUG PluginManager 'Lookup' found 16 plugins
+2022-10-18 12:27:30,216 Test worker DEBUG Building Plugin[name=layout, class=org.apache.logging.log4j.core.layout.PatternLayout].
+2022-10-18 12:27:30,220 Test worker DEBUG PluginManager 'TypeConverter' found 26 plugins
+2022-10-18 12:27:30,228 Test worker DEBUG PatternLayout$Builder(pattern="%d{HH:mm:ss.SSS} [%t] %highlight{%level}{FATAL=bg_red, ERROR=red, WARN=yellow, INFO=green, DEBUG=blue} - %msg%n", PatternSelector=null, Configuration(C:\Users\theok\Documents\GitHub\Baseline-Serenity-Automation-Framework\build\resources\test\log4j2.xml), Replace=null, charset="null", alwaysWriteExceptions="null", disableAnsi="false", noConsoleNoAnsi="null", header="null", footer="null")
+2022-10-18 12:27:30,229 Test worker DEBUG PluginManager 'Converter' found 45 plugins
+2022-10-18 12:27:30,231 Test worker DEBUG Building Plugin[name=appender, class=org.apache.logging.log4j.core.appender.ConsoleAppender].
+2022-10-18 12:27:30,235 Test worker DEBUG ConsoleAppender$Builder(target="SYSTEM_OUT", follow="null", direct="null", bufferedIo="null", bufferSize="null", immediateFlush="null", ignoreExceptions="null", PatternLayout(%d{HH:mm:ss.SSS} [%t] %highlight{%level}{FATAL=bg_red, ERROR=red, WARN=yellow, INFO=green, DEBUG=blue} - %msg%n), name="LogToConsole", Configuration(C:\Users\theok\Documents\GitHub\Baseline-Serenity-Automation-Framework\build\resources\test\log4j2.xml), Filter=null, ={})
+2022-10-18 12:27:30,237 Test worker DEBUG Starting OutputStreamManager SYSTEM_OUT.false.false
+2022-10-18 12:27:30,238 Test worker DEBUG Building Plugin[name=layout, class=org.apache.logging.log4j.core.layout.PatternLayout].
+2022-10-18 12:27:30,238 Test worker DEBUG PatternLayout$Builder(pattern="%d %p %c{1.} [%t] %m%n", PatternSelector=null, Configuration(C:\Users\theok\Documents\GitHub\Baseline-Serenity-Automation-Framework\build\resources\test\log4j2.xml), Replace=null, charset="null", alwaysWriteExceptions="null", disableAnsi="null", noConsoleNoAnsi="null", header="null", footer="null")
+2022-10-18 12:27:30,244 Test worker DEBUG Building Plugin[name=appender, class=org.apache.logging.log4j.core.appender.FileAppender].
+2022-10-18 12:27:30,246 Test worker DEBUG FileAppender$Builder(fileName="logs/logs.log", append="null", locking="null", advertise="null", advertiseUri="null", createOnDemand="null", filePermissions="null", fileOwner="null", fileGroup="null", bufferedIo="null", bufferSize="null", immediateFlush="null", ignoreExceptions="null", PatternLayout(%d %p %c{1.} [%t] %m%n), name="LogToRollingFile", Configuration(C:\Users\theok\Documents\GitHub\Baseline-Serenity-Automation-Framework\build\resources\test\log4j2.xml), Filter=null, ={})
+2022-10-18 12:27:30,246 Test worker ERROR File contains an invalid element or attribute "filePattern"
+2022-10-18 12:27:30,248 Test worker DEBUG Starting FileManager logs/logs.log
+2022-10-18 12:27:30,249 Test worker DEBUG Building Plugin[name=appenders, class=org.apache.logging.log4j.core.config.AppendersPlugin].
+2022-10-18 12:27:30,250 Test worker DEBUG createAppenders(={LogToConsole, LogToRollingFile})
+2022-10-18 12:27:30,250 Test worker DEBUG Building Plugin[name=AppenderRef, class=org.apache.logging.log4j.core.config.AppenderRef].
+2022-10-18 12:27:30,252 Test worker DEBUG createAppenderRef(ref="LogToRollingFile", level="null", Filter=null)
+2022-10-18 12:27:30,254 Test worker DEBUG Building Plugin[name=AppenderRef, class=org.apache.logging.log4j.core.config.AppenderRef].
+2022-10-18 12:27:30,254 Test worker DEBUG createAppenderRef(ref="LogToConsole", level="null", Filter=null)
+2022-10-18 12:27:30,254 Test worker DEBUG Building Plugin[name=logger, class=org.apache.logging.log4j.core.config.LoggerConfig].
+2022-10-18 12:27:30,256 Test worker DEBUG LoggerConfig$Builder(additivity="false", level="ALL", levelAndRefs="null", name="org.example", includeLocation="null", ={LogToRollingFile, LogToConsole}, ={}, Configuration(C:\Users\theok\Documents\GitHub\Baseline-Serenity-Automation-Framework\build\resources\test\log4j2.xml), Filter=null)
+2022-10-18 12:27:30,258 Test worker DEBUG Building Plugin[name=AppenderRef, class=org.apache.logging.log4j.core.config.AppenderRef].
+2022-10-18 12:27:30,258 Test worker DEBUG createAppenderRef(ref="LogToConsole", level="null", Filter=null)
+2022-10-18 12:27:30,258 Test worker DEBUG Building Plugin[name=root, class=org.apache.logging.log4j.core.config.LoggerConfig$RootLogger].
+2022-10-18 12:27:30,259 Test worker DEBUG LoggerConfig$RootLogger$Builder(additivity="null", level="ERROR", levelAndRefs="null", includeLocation="null", ={LogToConsole}, ={}, Configuration(C:\Users\theok\Documents\GitHub\Baseline-Serenity-Automation-Framework\build\resources\test\log4j2.xml), Filter=null)
+2022-10-18 12:27:30,260 Test worker DEBUG Building Plugin[name=loggers, class=org.apache.logging.log4j.core.config.LoggersPlugin].
+2022-10-18 12:27:30,260 Test worker DEBUG createLoggers(={org.example, root})
+2022-10-18 12:27:30,261 Test worker DEBUG Configuration XmlConfiguration[location=C:\Users\theok\Documents\GitHub\Baseline-Serenity-Automation-Framework\build\resources\test\log4j2.xml] initialized
+2022-10-18 12:27:30,261 Test worker DEBUG Starting configuration XmlConfiguration[location=C:\Users\theok\Documents\GitHub\Baseline-Serenity-Automation-Framework\build\resources\test\log4j2.xml]
+2022-10-18 12:27:30,261 Test worker DEBUG Started configuration XmlConfiguration[location=C:\Users\theok\Documents\GitHub\Baseline-Serenity-Automation-Framework\build\resources\test\log4j2.xml] OK.
+2022-10-18 12:27:30,262 Test worker DEBUG Shutting down OutputStreamManager SYSTEM_OUT.false.false-1
+2022-10-18 12:27:30,262 Test worker DEBUG OutputStream closed
+2022-10-18 12:27:30,262 Test worker DEBUG Shut down OutputStreamManager SYSTEM_OUT.false.false-1, all resources released: true
+2022-10-18 12:27:30,262 Test worker DEBUG Appender DefaultConsole-1 stopped with status true
+2022-10-18 12:27:30,263 Test worker DEBUG Stopped org.apache.logging.log4j.core.config.DefaultConfiguration@452e0742 OK
+2022-10-18 12:27:30,306 Test worker DEBUG Registering MBean org.apache.logging.log4j2:type=c387f44
+2022-10-18 12:27:30,307 Test worker DEBUG Registering MBean org.apache.logging.log4j2:type=c387f44,component=StatusLogger
+2022-10-18 12:27:30,308 Test worker DEBUG Registering MBean org.apache.logging.log4j2:type=c387f44,component=ContextSelector
+2022-10-18 12:27:30,309 Test worker DEBUG Registering MBean org.apache.logging.log4j2:type=c387f44,component=Loggers,name=
+2022-10-18 12:27:30,310 Test worker DEBUG Registering MBean org.apache.logging.log4j2:type=c387f44,component=Loggers,name=org.example
+2022-10-18 12:27:30,310 Test worker DEBUG Registering MBean org.apache.logging.log4j2:type=c387f44,component=Appenders,name=LogToConsole
+2022-10-18 12:27:30,311 Test worker DEBUG Registering MBean org.apache.logging.log4j2:type=c387f44,component=Appenders,name=LogToRollingFile
+2022-10-18 12:27:30,313 Test worker DEBUG org.apache.logging.log4j.core.util.SystemClock supports precise timestamps.
+2022-10-18 12:27:30,314 Test worker DEBUG Reconfiguration complete for context[name=c387f44] at URI C:\Users\theok\Documents\GitHub\Baseline-Serenity-Automation-Framework\build\resources\test\log4j2.xml (org.apache.logging.log4j.core.LoggerContext@5473308d) with optional ClassLoader: null
+2022-10-18 12:27:30,314 Test worker DEBUG Shutdown hook enabled. Registering a new one.
+2022-10-18 12:27:30,314 Test worker DEBUG LoggerContext[name=c387f44, org.apache.logging.log4j.core.LoggerContext@5473308d] started OK.
+12:27:30.340 [Test worker] ?[32mINFO?[m - TESTS STARTED
+2022-10-18 12:27:30,342 Test worker DEBUG AsyncLogger.ThreadNameStrategy=UNCACHED (user specified null, default is UNCACHED)
+2022-10-18 12:27:30,343 Test worker DEBUG org.apache.logging.log4j.core.util.SystemClock supports precise timestamps.
+?[32m.?[0m?[32m.?[0m12:27:35.810 [Test worker] ?[32mINFO?[m - TEST SUCCEEDED
+?[32m.?[0m]]></system-out>
+  <system-err><![CDATA[Oct 18, 2022 12:27:30 PM org.openqa.selenium.remote.DesiredCapabilities chrome
+INFO: Using `new ChromeOptions()` is preferred to `DesiredCapabilities.chrome()`
+Starting ChromeDriver 105.0.5195.52 (412c95e518836d8a7d97250d62b29c2ae6a26a85-refs/branch-heads/5195@{#853}) on port 55645
+Only local connections are allowed.
+Please see https://chromedriver.chromium.org/security-considerations for suggestions on keeping ChromeDriver safe.
+ChromeDriver was started successfully.
+[1666092451.567][WARNING]: This version of ChromeDriver has not been tested with Chrome version 106.
+Oct 18, 2022 12:27:32 PM org.openqa.selenium.remote.ProtocolHandshake createSession
+INFO: Detected dialect: W3C
+]]></system-err>
+</testsuite>

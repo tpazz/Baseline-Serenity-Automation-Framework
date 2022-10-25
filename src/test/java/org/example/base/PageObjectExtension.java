@@ -37,13 +37,13 @@ public class PageObjectExtension extends PageObject {
 
     public void waitForElement(WebElement webElement, WaitType waitType) {
         switch (waitType) {
-            case CLICKABLE   -> waitFor(webElement).waitUntilClickable();
-            case DISABLED    -> waitFor(webElement).waitUntilDisabled();
-            case ENABLED     -> waitFor(webElement).waitUntilEnabled();
-            case NOT_VISIBLE -> waitFor(webElement).waitUntilNotVisible();
-            case VISIBLE     -> waitFor(webElement).waitUntilVisible();
-            case PRESENT     -> waitFor(webElement).waitUntilPresent();
-            case DONT_WAIT   -> {}
+            case CLICKABLE   : waitFor(webElement).waitUntilClickable();
+            case DISABLED    : waitFor(webElement).waitUntilDisabled();
+            case ENABLED     : waitFor(webElement).waitUntilEnabled();
+            case NOT_VISIBLE : waitFor(webElement).waitUntilNotVisible();
+            case VISIBLE     : waitFor(webElement).waitUntilVisible();
+            case PRESENT     : waitFor(webElement).waitUntilPresent();
+            case DONT_WAIT   : {}
         }
     }
 
@@ -54,8 +54,8 @@ public class PageObjectExtension extends PageObject {
     public void setExplicitWait(int seconds, WebElement webElement, WaitType waitType) {
         WebDriverWait webDriverWait = new WebDriverWait(getDriver(), seconds);
         switch (waitType) {
-            case VISIBLE -> webDriverWait.until(ExpectedConditions.visibilityOf(webElement));
-            case CLICKABLE -> webDriverWait.until(ExpectedConditions.elementToBeClickable(webElement));
+            case VISIBLE   : webDriverWait.until(ExpectedConditions.visibilityOf(webElement));
+            case CLICKABLE : webDriverWait.until(ExpectedConditions.elementToBeClickable(webElement));
             // add more cases...
         }
     }
@@ -295,6 +295,10 @@ public class PageObjectExtension extends PageObject {
         SimpleDateFormat formatter = new SimpleDateFormat("yy-MM-dd");
         Date date = new Date();
         return formatter.format(date);
+    }
+
+    public void initLogger() {
+        logger.info("TESTS STARTED");
     }
 
     public WebElement generateElement(By type) {
