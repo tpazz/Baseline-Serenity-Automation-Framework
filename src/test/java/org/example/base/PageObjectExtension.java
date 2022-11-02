@@ -3,7 +3,6 @@ package org.example.base;
 import net.serenitybdd.core.pages.PageObject;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.eclipse.jetty.util.log.Log;
 import org.junit.Assert;
 import org.openqa.selenium.*;
 import org.openqa.selenium.interactions.Actions;
@@ -187,13 +186,7 @@ public class PageObjectExtension extends PageObject {
         webElement.sendKeys(keys);
     }
 
-    public void selectButton(String button) {
-        locator = By.xpath("//button[contains(.,'" + button + "')]");
-        element = generateElement(locator);
-        click(element);
-    }
-
-    public void selectText(String elementType, String text) {
+    public void selectElementWithText(String elementType, String text) {
         locator = By.xpath("//" + elementType + "[text()='" + text + "']");
         element = generateElement(locator);
         click(element);
@@ -271,24 +264,12 @@ public class PageObjectExtension extends PageObject {
     public void switchTabs(int tabNo) {
         ArrayList<String> tabs2 = new ArrayList<> (getDriver().getWindowHandles());
         getDriver().switchTo().window(tabs2.get(tabNo));
-        getDriver().manage().window().setSize(new Dimension(1920, 1080));
+        //getDriver().manage().window().setSize(new Dimension(1920, 1080));
     }
 
     public void moveToElementClick(WebElement webElement) {
         Actions actions = new Actions(getDriver());
         actions.moveToElement(webElement).click().build().perform();
-    }
-
-    public void activeElementHandler(WebElement webElement, String value) {
-        try { Thread.sleep(1000); }
-        catch (InterruptedException e) { throw new RuntimeException(e); }
-        click(webElement);
-        try { Thread.sleep(1000); }
-        catch (InterruptedException e) { throw new RuntimeException(e); }
-        element = getDriver().switchTo().activeElement();
-        enterText(element, value);
-        enterKey(element, Keys.DOWN);
-        enterKey(element, Keys.ENTER);
     }
 
     public String getCurrentDate() {
@@ -298,8 +279,10 @@ public class PageObjectExtension extends PageObject {
     }
 
     public void initLogger() {
-        logger.info("TESTS STARTED");
+        logger.info("~TESTS STARTED~");
     }
+
+    public void endLogger() { logger.info("~TEST FINISHED~");}
 
     public WebElement generateElement(By type) {
         return getDriver().findElement(type);
@@ -314,25 +297,18 @@ public class PageObjectExtension extends PageObject {
     @FindBy(className = "feedback-message-text")
     WebElement feedbackMessage;
 
-    // Change feedback message
-    // Change class name of the feedback message
     public void verifyFeedbackMessage(String expected) {
-        String message = "<message>";
-        WebDriverWait webDriverWait = new WebDriverWait(getDriver(), 30);
-        webDriverWait.until(ExpectedConditions.visibilityOfElementLocated(By.className("<feedback-message>")));
+        locator = By.className("<feedback-message>");
+        element = generateElement(locator);
+        setExplicitWait(30, element, WaitType.VISIBLE);
         actual = getText(feedbackMessage);
-        if (actual.equalsIgnoreCase(message)) expected = actual;
+        if (actual.equalsIgnoreCase(getText(element))) expected = actual;
         verify(expected, actual);
     }
 
     public boolean verifyFileDownloaded(String fileName) {
         String expected = "File Successfully Downloaded";
         actual = "";
-        try {
-            Thread.sleep(5000);
-        } catch (InterruptedException e) {
-            throw new RuntimeException(e);
-        }
         File dir = new File(Constants.BASE_DOWNLOADS);
         File[] dirContents = dir.listFiles();
         for (int i = 0; i < dirContents.length; i++) {
@@ -345,14 +321,6 @@ public class PageObjectExtension extends PageObject {
             }
         }
         return false;
-    }
-
-    public void verifyElementText(WebElement webElement, String expected) {
-        try { actual = getText(webElement); }
-        catch (Exception e) {
-            try { actual = getAttribute(webElement, "value"); }
-            catch (Exception f) { actual = f.toString(); } }
-        verify(expected, actual);
     }
 
     public void verifyURL(String expected) {
@@ -369,28 +337,22 @@ public class PageObjectExtension extends PageObject {
         verify(expected, actual);
     }
 
-    public void verifyText(String elementType, String expected) {
-        actual = expected;
-        // try with 'text()' first
-        locator = By.xpath("//" + elementType + "[text()='" + expected + "']");
-        try { generateElement(locator); }
-        catch (Exception e) {
-            // then try with deeper 'contains'
-            locator = By.xpath("//" + elementType + "[contains(@value, '" + expected + "')]");
-            try { generateElement(locator); }
-            catch (Exception f) { actual = f.toString(); } }
+    public void verifyElementText(WebElement webElement, String expected) {
+        try { actual = getText(webElement); }
+        catch (Exception e) { actual = e.toString(); }
         verify(expected, actual);
     }
 
-    public void verifyTextDoesNotExist(String elementType, String text) {
-        locator = By.xpath("//" + elementType + "[text()='" + text + "']");
-        elements = generateElements(locator);
-        actual = String.valueOf(elements.size());
-        verify("0", actual);
+    public void verifyTextOnPage(String elementType, String expected) {
+        actual = expected;
+        locator = By.xpath("//" + elementType + "[text()='" + expected + "']");
+        try { generateElement(locator); }
+        catch (Exception e) { actual = e.toString(); }
+        verify(expected, actual);
     }
 
-    public void verifyButtonDoesNotExist(String button) {
-        locator = By.xpath("//button[contains(.,'" + button + "')]");
+    public void verifyTextDoesNotExistOnPage(String elementType, String notExpected) {
+        locator = By.xpath("//" + elementType + "[text()='" + notExpected + "']");
         elements = generateElements(locator);
         actual = String.valueOf(elements.size());
         verify("0", actual);
@@ -405,10 +367,10 @@ public class PageObjectExtension extends PageObject {
     public void verify(String expected, String actual) {
         String message = "***** FAIL: [" + expected + " =/= " + actual + "] *****";
         if (expected.equalsIgnoreCase(actual))
-            logger.info("TEST SUCCEEDED");
+            logger.info("***TEST SUCCEEDED***");
         else
             logger.error(message);
-        assertEquals(message , expected, actual);
+        assertEquals(message, expected, actual);
     }
 
 }
