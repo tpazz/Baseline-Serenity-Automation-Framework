@@ -18,15 +18,12 @@ public class Shared {
     @Then("Verify the heading reads {string}")
     public void verifyHeadingText(String expected) {
         theInternet.verifyPage(expected);
-    }
-
-    @Given("The {string} is up to date")
-    public void theChromedriverIsUpToDate() {
-
+        pageObjectExtension.endLogger();
     }
 
     @Then("Initiate tests")
     public void initiateTests() {
-        pageObjectExtension.initLogger();
+        pageObjectExtension.startLogger();
     }
+
 }

@@ -12,9 +12,10 @@ import org.openqa.selenium.support.ui.ExpectedConditions;
 import org.openqa.selenium.support.ui.Select;
 import org.openqa.selenium.support.ui.WebDriverWait;
 
-import java.io.File;
+import java.io.*;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicReference;
@@ -278,7 +279,50 @@ public class PageObjectExtension extends PageObject {
         return formatter.format(date);
     }
 
-    public void initLogger() {
+    public List<List<String>> getFileIntoArray() {
+        List<List<String>> records = new ArrayList<>();
+        try (BufferedReader br = new BufferedReader(new FileReader("src/test/resources/csvFile.csv"))) {
+            String line;
+            while ((line = br.readLine()) != null) {
+                String[] values = line.split(",");
+                records.add(Arrays.asList(values));
+            }
+        } catch (Exception e) { logger.error("Error converting file into array"); }
+        return records;
+    }
+
+    public String readFromFile(String key) {
+        final String[] value = {""};
+        getFileIntoArray().forEach(r -> {
+            if (r.get(0).equals(key))
+                value[0] = r.get(1);
+        });
+        logger.info(value[0]);
+        return value[0];
+    }
+
+    public void getArrayIntoFile(List<List<String>> records) {
+        try (FileWriter writer = new FileWriter("src/test/resources/csvFile.csv")) {
+            records.forEach(r -> {
+                try {
+                    writer.write(r.get(0) + "," + r.get(1) + "\n");
+                } catch (IOException e) {
+                    logger.error("Error writing to File");
+                }
+            });
+        } catch (Exception e) { logger.error("Error converting array into file"); }
+    }
+
+    public void writeToFile(String key, String value) {
+        List<List<String>> records = getFileIntoArray();
+        records.forEach(r -> {
+            if (r.get(0).equals(key))
+                r.set(1,value);
+            getArrayIntoFile(records);
+        });
+    }
+
+    public void startLogger() {
         logger.info("~TESTS STARTED~");
     }
 
