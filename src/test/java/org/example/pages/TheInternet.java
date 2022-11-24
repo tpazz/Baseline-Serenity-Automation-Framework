@@ -15,7 +15,7 @@ public class TheInternet extends PageObjectExtension {
     }
 
     public void verifyPage(String expected) {
-        actual = getText(heading);
+        actual = executeAction(Action.GET_TEXT, heading);
         verify(expected, actual);
     }
 

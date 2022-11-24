@@ -18,7 +18,6 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
-import java.util.concurrent.atomic.AtomicReference;
 
 import static org.junit.Assert.assertEquals;
 
@@ -30,173 +29,105 @@ public class PageObjectExtension extends PageObject {
     public WebElement element;
     public List<WebElement> elements = new ArrayList<>();
     public By locator;
+    public WebDriverWait wait;
 
-    // ************************************************** WAITS ********************************************************
+    public enum Action { CLICK, ENTER_TEXT, SELECT_FROM_DROPDOWN, ENTER_KEY, GET_CSS, GET_ATTRIBUTE, GET_DROPDOWN_TEXT, GET_TEXT }
+    public enum WaitType { ENABLED, CLICKABLE, DISABLED, PRESENT, VISIBLE, NOT_VISIBLE }
 
-    public enum WaitType { DONT_WAIT, CLICKABLE, DISABLED, ENABLED, NOT_VISIBLE, VISIBLE, PRESENT }
+    // Ignore Selenium exceptions by repeatedly attempting desired action until successful (default time out = 5s)
+    // waitUntilClickable is the same as ignoring ElementClickInterceptedException + ElementNotVisibleException
+    public String executeAction(Action action, WebElement webElement, String value) {
+        return executeAction(action, webElement, value, 5);
+    }
 
-    public void waitForElement(WebElement webElement, WaitType waitType) {
-        switch (waitType) {
-            case CLICKABLE   : waitFor(webElement).waitUntilClickable();
-            case DISABLED    : waitFor(webElement).waitUntilDisabled();
-            case ENABLED     : waitFor(webElement).waitUntilEnabled();
-            case NOT_VISIBLE : waitFor(webElement).waitUntilNotVisible();
-            case VISIBLE     : waitFor(webElement).waitUntilVisible();
-            case PRESENT     : waitFor(webElement).waitUntilPresent();
-            case DONT_WAIT   : {}
+    public String executeAction(Action action, WebElement webElement) {
+        return executeAction(action, webElement, "", 5);
+    }
+
+    public String executeAction(Action action, WebElement webElement, String value, int timeOut) {
+        final String[] returnValue = {""};
+        wait = new WebDriverWait(getDriver(), timeOut);
+        wait.ignoring(StaleElementReferenceException.class)
+            .ignoring(ElementNotInteractableException.class)
+            .ignoring(ElementClickInterceptedException.class)
+            .ignoring(ElementNotSelectableException.class)
+            .ignoring(ElementNotVisibleException.class)
+            .until((WebDriver d) -> {
+                switch (action) {
+                    case CLICK                : webElement.click();                              break;
+                    case ENTER_TEXT           : enterText(webElement, value);                    break;
+                    case ENTER_KEY            : enterKey(webElement, value);                     break;
+                    case SELECT_FROM_DROPDOWN : selectFromDropdown(webElement, value);           break;
+                    case GET_CSS              : returnValue[0] = webElement.getCssValue(value);  break;
+                    case GET_ATTRIBUTE        : returnValue[0] = webElement.getAttribute(value); break;
+                    case GET_DROPDOWN_TEXT    : returnValue[0] = getDropDownText(webElement);    break;
+                    case GET_TEXT             : returnValue[0] = webElement.getText();           break;
+                }
+                return true;
+            });
+        return returnValue[0];
+    }
+
+    public void enterKey(WebElement webElement, String keys) {
+        switch (keys) {
+            case "DOWN_ARROW"  : webElement.sendKeys(Keys.ARROW_DOWN);  break;
+            case "UP_ARROW"    : webElement.sendKeys(Keys.ARROW_UP);    break;
+            case "LEFT_ARROW"  : webElement.sendKeys(Keys.ARROW_LEFT);  break;
+            case "RIGHT_ARROW" : webElement.sendKeys(Keys.ARROW_RIGHT); break;
+            case "ESCAPE"      : webElement.sendKeys(Keys.ESCAPE);      break;
+            case "ENTER"       : webElement.sendKeys(Keys.ENTER);       break;
+            // add more cases
         }
     }
 
-    public void waitForElement(WebElement webElement) {
-        waitFor(webElement).waitUntilPresent();
-    }
-
-    public void setExplicitWait(int seconds, WebElement webElement, WaitType waitType) {
-        WebDriverWait webDriverWait = new WebDriverWait(getDriver(), seconds);
+    // Set explicit wait for element condition
+    public void waitForElement(WebElement webElement, WaitType waitType, int timeOut) {
+        wait = new WebDriverWait(getDriver(), timeOut);
         switch (waitType) {
-            case VISIBLE   : webDriverWait.until(ExpectedConditions.visibilityOf(webElement));
-            case CLICKABLE : webDriverWait.until(ExpectedConditions.elementToBeClickable(webElement));
-            // add more cases...
+            case ENABLED     : waitFor(webElement).waitUntilEnabled();    break;
+            case CLICKABLE   : waitFor(webElement).waitUntilClickable();  break;
+            case DISABLED    : waitFor(webElement).waitUntilDisabled();   break;
+            case PRESENT     : waitFor(webElement).waitUntilPresent();    break;
+            case VISIBLE     : waitFor(webElement).waitUntilVisible();    break;
+            case NOT_VISIBLE : waitFor(webElement).waitUntilNotVisible(); break;
         }
     }
 
-    // ************************************************* HANDLERS ******************************************************
-
-    public void handleAlert(String option) {
-        WebDriverWait webDriverWait = new WebDriverWait(getDriver(), 10);
-        webDriverWait.until(ExpectedConditions.alertIsPresent());
-        if (option.equalsIgnoreCase("OK")) getDriver().switchTo().alert().accept();
-        else getDriver().switchTo().alert().dismiss();
+    public WebElement generateElement(By locator) {
+        wait = new WebDriverWait(getDriver(), 5);
+        wait.until(ExpectedConditions.presenceOfElementLocated(locator));
+        return getDriver().findElement(locator);
     }
 
-    public void handleStaleClick(By locator) {
-        new WebDriverWait(getDriver(), 5)
-                .ignoring(StaleElementReferenceException.class)
-                .until((WebDriver d) -> {
-                    d.findElement(locator).click();
-                    return true;
-                });
+    public List<WebElement> generateElements(By type) {
+        return getDriver().findElements(type);
     }
-
-    public void handleStaleEnterText(By locator, String value) {
-        new WebDriverWait(getDriver(), 5)
-                .ignoring(StaleElementReferenceException.class)
-                .until((WebDriver d) -> {
-                    d.findElement(locator).sendKeys(value);
-                    return true;
-                });
-    }
-
-    public String handleStaleGetTextByLocator(By locator, String value) {
-        AtomicReference<String> text = new AtomicReference<>("");
-        new WebDriverWait(getDriver(), 5)
-                .ignoring(StaleElementReferenceException.class)
-                .until((WebDriver d) -> {
-                    text.set(d.findElement(locator).getText());
-                    return true;
-                });
-        return text.get();
-    }
-
-    public String handleStaleGetTextElement(WebElement webElement) {
-        AtomicReference<String> text = new AtomicReference<>("");
-        new WebDriverWait(getDriver(), 5)
-                .ignoring(StaleElementReferenceException.class)
-                .until((WebDriver d) -> {
-                    text.set(webElement.getText());
-                    return true;
-                });
-        return text.get();
-    }
-
-    // ********************************************* INTERACTIONS ******************************************************
 
     public void selectFromDropdown(WebElement webElement, String text) {
-        selectFromDropdown(webElement, text, WaitType.CLICKABLE);
-    }
-
-    public void selectFromDropdown(WebElement webElement, String text, WaitType waitType) {
-        waitForElement(webElement, waitType);
         Select select = new Select(webElement);
         select.selectByVisibleText(text);
     }
 
     public void enterText(WebElement webElement, String text) {
-        enterText(webElement, text, WaitType.CLICKABLE);
-    }
-
-    public void enterText(WebElement webElement, String text, WaitType waitType) {
-        waitForElement(webElement, waitType);
         webElement.clear();
         webElement.sendKeys(text);
     }
 
-    public void click(WebElement webElement) {
-        click(webElement, WaitType.CLICKABLE);
-    }
-
-    public void click(WebElement webElement, WaitType waitType) {
-        waitForElement(webElement, waitType);
-        webElement.click();
-    }
-
-    public String getCSS(WebElement webElement, String css) {
-        return getCSS(webElement, css, WaitType.PRESENT);
-    }
-
-    public String getCSS(WebElement webElement, String css, WaitType waitType) {
-        waitForElement(webElement, waitType);
-        return webElement.getCssValue(css);
-    }
-
-    public String getAttribute(WebElement webElement, String att) {
-        return getAttribute(webElement, att, WaitType.PRESENT);
-    }
-
-    public String getAttribute(WebElement webElement, String att, WaitType waitType) {
-        waitForElement(webElement, waitType);
-        return webElement.getAttribute(att);
-    }
-
     public String getDropDownText(WebElement webElement) {
-        return getDropDownText(webElement, WaitType.VISIBLE);
-    }
-
-    public String getDropDownText(WebElement webElement, WaitType waitType) {
-        waitForElement(webElement, waitType);
-        String[] split = getText(webElement).split("\\r?\\n");
+        String[] split = webElement.getText().split("\\r?\\n");
         return split[0].trim();
-    }
-
-    public String getText(WebElement webElement) {
-        return getText(webElement, WaitType.VISIBLE);
-    }
-
-    public String getText(WebElement webElement, WaitType waitType) {
-        waitForElement(webElement, waitType);
-        return webElement.getText();
-    }
-
-    public void enterKey(WebElement webElement, Keys keys) {
-        enterKey(webElement, keys, WaitType.CLICKABLE);
-    }
-
-    public void enterKey(WebElement webElement, Keys keys, WaitType waitType) {
-        waitForElement(webElement, waitType);
-        waitForElement(webElement);
-        webElement.sendKeys(keys);
     }
 
     public void selectElementWithText(String elementType, String text) {
         locator = By.xpath("//" + elementType + "[text()='" + text + "']");
         element = generateElement(locator);
-        click(element);
+        executeAction(Action.CLICK, element, "");
     }
 
     public void selectElementWithValue(String elementType, String attribute, String value) {
         locator = By.xpath("//" + elementType + "[contains(@" + attribute + ", '" + value + "')]");
-        handleStaleClick(locator);
-        waitForPageLoadedJS();
+        element = generateElement(locator);
+        executeAction(Action.CLICK, element, "");
     }
 
     // ************************************************* JS ************************************************************
@@ -259,8 +190,14 @@ public class PageObjectExtension extends PageObject {
         }
     }
 
-
     // ************************************************* GENERIC *******************************************************
+
+    public void handleAlert(String option) {
+        wait = new WebDriverWait(getDriver(), 5);
+        wait.until(ExpectedConditions.alertIsPresent());
+        if (option.equalsIgnoreCase("OK")) getDriver().switchTo().alert().accept();
+        else getDriver().switchTo().alert().dismiss();
+    }
 
     public void switchTabs(int tabNo) {
         ArrayList<String> tabs2 = new ArrayList<> (getDriver().getWindowHandles());
@@ -278,6 +215,8 @@ public class PageObjectExtension extends PageObject {
         Date date = new Date();
         return formatter.format(date);
     }
+
+    // ******************************************* FILE I/O ************************************************************
 
     public List<List<String>> getFileIntoArray() {
         List<List<String>> records = new ArrayList<>();
@@ -322,33 +261,13 @@ public class PageObjectExtension extends PageObject {
         });
     }
 
-    public void startLogger() {
-        logger.info("~TESTS STARTED~");
-    }
+    // ****************************************** LOGGER ***************************************************************
 
-    public void endLogger() { logger.info("~TEST FINISHED~");}
+    public void startLogger() { logger.info("~TESTS STARTED~"); }
 
-    public WebElement generateElement(By type) {
-        return getDriver().findElement(type);
-    }
-
-    public List<WebElement> generateElements(By type) {
-        return getDriver().findElements(type);
-    }
+    public void endLogger() { logger.info("~TEST FINISHED~"); }
 
     // ***************************************** VERIFY METHODS ********************************************************
-
-    @FindBy(className = "feedback-message-text")
-    WebElement feedbackMessage;
-
-    public void verifyFeedbackMessage(String expected) {
-        locator = By.className("<feedback-message>");
-        element = generateElement(locator);
-        setExplicitWait(30, element, WaitType.VISIBLE);
-        actual = getText(feedbackMessage);
-        if (actual.equalsIgnoreCase(getText(element))) expected = actual;
-        verify(expected, actual);
-    }
 
     public boolean verifyFileDownloaded(String fileName) {
         String expected = "File Successfully Downloaded";
@@ -382,7 +301,7 @@ public class PageObjectExtension extends PageObject {
     }
 
     public void verifyElementText(WebElement webElement, String expected) {
-        try { actual = getText(webElement); }
+        try { actual = executeAction(Action.GET_TEXT, webElement, ""); }
         catch (Exception e) { actual = e.toString(); }
         verify(expected, actual);
     }
@@ -410,10 +329,8 @@ public class PageObjectExtension extends PageObject {
 
     public void verify(String expected, String actual) {
         String message = "***** FAIL: [" + expected + " =/= " + actual + "] *****";
-        if (expected.equalsIgnoreCase(actual))
-            logger.info("***TEST SUCCEEDED***");
-        else
-            logger.error(message);
+        if (expected.equalsIgnoreCase(actual)) logger.info("***TEST SUCCEEDED***");
+        else logger.error(message);
         assertEquals(message, expected, actual);
     }
 
