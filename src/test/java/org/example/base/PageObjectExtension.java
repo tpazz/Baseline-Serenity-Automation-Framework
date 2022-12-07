@@ -6,7 +6,6 @@ import org.apache.logging.log4j.Logger;
 import org.junit.Assert;
 import org.openqa.selenium.*;
 import org.openqa.selenium.interactions.Actions;
-import org.openqa.selenium.support.FindBy;
 import org.openqa.selenium.support.ui.ExpectedCondition;
 import org.openqa.selenium.support.ui.ExpectedConditions;
 import org.openqa.selenium.support.ui.Select;
@@ -34,8 +33,6 @@ public class PageObjectExtension extends PageObject {
     public enum Action { CLICK, ENTER_TEXT, SELECT_FROM_DROPDOWN, ENTER_KEY, GET_CSS, GET_ATTRIBUTE, GET_DROPDOWN_TEXT, GET_TEXT }
     public enum WaitType { ENABLED, CLICKABLE, DISABLED, PRESENT, VISIBLE, NOT_VISIBLE }
 
-    // Ignore Selenium exceptions by repeatedly attempting desired action until successful (default time out = 5s)
-    // waitUntilClickable is the same as ignoring ElementClickInterceptedException + ElementNotVisibleException
     public String executeAction(Action action, WebElement webElement, String value) {
         return executeAction(action, webElement, value, 5);
     }
@@ -46,18 +43,12 @@ public class PageObjectExtension extends PageObject {
 
     public String executeAction(Action action, WebElement webElement, String value, int timeOut) {
         final String[] returnValue = {""};
-        wait = new WebDriverWait(getDriver(), timeOut);
-        wait.ignoring(StaleElementReferenceException.class)
-            .ignoring(ElementNotInteractableException.class)
-            .ignoring(ElementClickInterceptedException.class)
-            .ignoring(ElementNotSelectableException.class)
-            .ignoring(ElementNotVisibleException.class)
-            .until((WebDriver d) -> {
+        new WebDriverWait(getDriver(), timeOut).ignoring(Exception.class).until((WebDriver d) -> {
                 switch (action) {
                     case CLICK                : webElement.click();                              break;
                     case ENTER_TEXT           : enterText(webElement, value);                    break;
                     case ENTER_KEY            : enterKey(webElement, value);                     break;
-                    case SELECT_FROM_DROPDOWN : selectFromDropdown(webElement, value);           break;
+                    case SELECT_FROM_DROPDOWN : selectTextFromDropdown(webElement, value);       break;
                     case GET_CSS              : returnValue[0] = webElement.getCssValue(value);  break;
                     case GET_ATTRIBUTE        : returnValue[0] = webElement.getAttribute(value); break;
                     case GET_DROPDOWN_TEXT    : returnValue[0] = getDropDownText(webElement);    break;
@@ -68,7 +59,7 @@ public class PageObjectExtension extends PageObject {
         return returnValue[0];
     }
 
-    public void enterKey(WebElement webElement, String keys) {
+    private void enterKey(WebElement webElement, String keys) {
         switch (keys) {
             case "DOWN_ARROW"  : webElement.sendKeys(Keys.ARROW_DOWN);  break;
             case "UP_ARROW"    : webElement.sendKeys(Keys.ARROW_UP);    break;
@@ -76,11 +67,10 @@ public class PageObjectExtension extends PageObject {
             case "RIGHT_ARROW" : webElement.sendKeys(Keys.ARROW_RIGHT); break;
             case "ESCAPE"      : webElement.sendKeys(Keys.ESCAPE);      break;
             case "ENTER"       : webElement.sendKeys(Keys.ENTER);       break;
-            // add more cases
+            // add more key cases
         }
     }
 
-    // Set explicit wait for element condition
     public void waitForElement(WebElement webElement, WaitType waitType, int timeOut) {
         wait = new WebDriverWait(getDriver(), timeOut);
         switch (waitType) {
@@ -103,19 +93,19 @@ public class PageObjectExtension extends PageObject {
         return getDriver().findElements(type);
     }
 
-    public void selectFromDropdown(WebElement webElement, String text) {
+    private void selectTextFromDropdown(WebElement webElement, String text) {
         Select select = new Select(webElement);
         select.selectByVisibleText(text);
     }
 
-    public void enterText(WebElement webElement, String text) {
-        webElement.clear();
-        webElement.sendKeys(text);
+    private String getDropDownText(WebElement webElement) {
+        String[] split = executeAction(Action.GET_TEXT, webElement).split("\\r?\\n");
+        return split[0].trim();
     }
 
-    public String getDropDownText(WebElement webElement) {
-        String[] split = webElement.getText().split("\\r?\\n");
-        return split[0].trim();
+    private void enterText(WebElement webElement, String text) {
+        webElement.clear();
+        webElement.sendKeys(text);
     }
 
     public void selectElementWithText(String elementType, String text) {
@@ -147,11 +137,6 @@ public class PageObjectExtension extends PageObject {
     public void makeVisibleJS(WebElement webElement) {
         JavascriptExecutor js = (JavascriptExecutor) getDriver();
         js.executeScript("arguments[0].style.display='block';", webElement);
-    }
-
-    public void handleUpload(WebElement webElement, String fileName) {
-        makeVisibleJS(webElement);
-        webElement.sendKeys(Constants.BASE_DIRECTORY + fileName);
     }
 
     public void openNewTabJS() {
@@ -203,6 +188,7 @@ public class PageObjectExtension extends PageObject {
         ArrayList<String> tabs2 = new ArrayList<> (getDriver().getWindowHandles());
         getDriver().switchTo().window(tabs2.get(tabNo));
         //getDriver().manage().window().setSize(new Dimension(1920, 1080));
+        //waitForPageLoadedJS();
     }
 
     public void moveToElementClick(WebElement webElement) {
@@ -214,6 +200,14 @@ public class PageObjectExtension extends PageObject {
         SimpleDateFormat formatter = new SimpleDateFormat("yy-MM-dd");
         Date date = new Date();
         return formatter.format(date);
+    }
+
+    public By xPathBuilder(String elementType, String attribute, String value) {
+        return By.xpath("//" + elementType + "[" + attribute + "='" + value + "']");
+    }
+
+    public void threadSleep(int millis) {
+        try { Thread.sleep(millis); } catch (Exception e) { logger.error(e); }
     }
 
     // ******************************************* FILE I/O ************************************************************
@@ -269,16 +263,15 @@ public class PageObjectExtension extends PageObject {
 
     // ***************************************** VERIFY METHODS ********************************************************
 
-    public boolean verifyFileDownloaded(String fileName) {
+    public boolean verifyFileDownloaded(String fileName, boolean delete) {
         String expected = "File Successfully Downloaded";
         actual = "";
-        File dir = new File(Constants.BASE_DOWNLOADS);
+        File dir = new File(Constants.LOCAL_DOWNLOADS);
         File[] dirContents = dir.listFiles();
         for (int i = 0; i < dirContents.length; i++) {
             if (dirContents[i].getName().equals(fileName)) {
                 actual = expected;
-                // File has been found, it can now be deleted:
-                dirContents[i].delete();
+                if (delete) dirContents[i].delete();
                 verify(expected, actual);
                 return true;
             }
@@ -301,16 +294,14 @@ public class PageObjectExtension extends PageObject {
     }
 
     public void verifyElementText(WebElement webElement, String expected) {
-        try { actual = executeAction(Action.GET_TEXT, webElement, ""); }
-        catch (Exception e) { actual = e.toString(); }
+        actual = executeAction(Action.GET_TEXT, webElement, "");
         verify(expected, actual);
     }
 
     public void verifyTextOnPage(String elementType, String expected) {
         actual = expected;
-        locator = By.xpath("//" + elementType + "[text()='" + expected + "']");
-        try { generateElement(locator); }
-        catch (Exception e) { actual = e.toString(); }
+        locator = xPathBuilder(elementType, "text()", expected);
+        generateElement(locator);
         verify(expected, actual);
     }
 
